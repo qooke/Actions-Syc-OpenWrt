@@ -31,11 +31,17 @@ jobs:
           git remote add upstream https://github.com/openwrt/openwrt.git || true
           git fetch --prune --tags upstream
 
-      - name: Sync with upstream (rebase)
+      - name: Update main from upstream
         run: |
           git checkout main
           git rebase upstream/main
 
-      - name: Push to owrt
+      - name: Rebase dev onto updated main
+        run: |
+          git checkout dev
+          git rebase main
+
+      - name: Push branches
         run: |
           git push origin main --force-with-lease
+          git push origin dev --force-with-lease
