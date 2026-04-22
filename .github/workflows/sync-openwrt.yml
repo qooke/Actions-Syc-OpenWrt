@@ -41,7 +41,13 @@ jobs:
           git checkout dev
           git rebase main
 
+      - name: Rebase tmp onto updated main
+        run: |
+          git checkout tmp
+          git rebase main
+
       - name: Push branches
         run: |
           git push origin main --force-with-lease
           git push origin dev --force-with-lease
+          git push origin tmp --force-with-lease
