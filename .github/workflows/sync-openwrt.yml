@@ -14,40 +14,63 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ====== 同步 qooke/owrt ======
       - name: Checkout owrt repository
         uses: actions/checkout@v4
         with:
           repository: qooke/owrt
           token: ${{ secrets.OWRT_PAT }}
+          path: owrt
           fetch-depth: 0
 
-      - name: Configure Git
+      - name: Sync owrt repo
         run: |
+          cd owrt
           git config user.name "qooke"
           git config user.email "83923036@qq.com"
 
-      - name: Add upstream and fetch
-        run: |
           git remote add upstream https://github.com/openwrt/openwrt.git || true
           git fetch --prune --tags upstream
 
-      - name: Update main from upstream
-        run: |
           git checkout main
           git rebase upstream/main
 
-      - name: Rebase dev onto updated main
-        run: |
           git checkout dev
           git rebase main
 
-      - name: Rebase tmp onto updated main
-        run: |
-          git checkout tmp
-          git rebase main
+          git push origin main --force-with-lease
+          git push origin dev --force-with-lease
 
-      - name: Push branches
+      # ====== 同步 qooke/openwrt ======
+      - name: Checkout openwrt mirror repo
+        uses: actions/checkout@v4
+        with:
+          repository: qooke/openwrt
+          path: openwrt
+          fetch-depth: 0
+
+      - name: Sync openwrt mirror repo
         run: |
+          cd openwrt
+          git config user.name "qooke"
+          git config user.email "83923036@qq.com"
+
+          git remote add upstream https://github.com/openwrt/openwrt.git || true
+          git fetch --prune --tags upstream
+
+          # main 分支
+          git checkout main || git checkout -b main
+          git rebase upstream/main
+
+          # dev 分支
+          git checkout dev || git checkout -b dev
+          git rebase upstream/main
+
+          # tmp 分支
+          git checkout tmp || git checkout -b tmp
+          git rebase upstream/main
+
+          # push
           git push origin main --force-with-lease
           git push origin dev --force-with-lease
           git push origin tmp --force-with-lease
