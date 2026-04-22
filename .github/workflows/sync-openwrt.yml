@@ -1,4 +1,4 @@
-name: Sync OpenWrt to owrt repo
+name: Sync OpenWrt repo
 
 on:
   schedule:
@@ -32,14 +32,22 @@ jobs:
           git remote add upstream https://github.com/openwrt/openwrt.git || true
           git fetch --prune --tags upstream
 
-          git checkout main
+          # main 分支
+          git checkout main || git checkout -b main
           git rebase upstream/main
 
-          git checkout dev
-          git rebase main
+          # dev 分支
+          git checkout dev || git checkout -b dev
+          git rebase upstream/main
 
+          # tmp 分支
+          git checkout tmp || git checkout -b tmp
+          git rebase upstream/main
+
+          # push
           git push origin main --force-with-lease
           git push origin dev --force-with-lease
+          git push origin tmp --force-with-lease          
 
       # ====== 同步 qooke/openwrt ======
       - name: Checkout openwrt mirror repo
@@ -68,8 +76,8 @@ jobs:
           git rebase upstream/main
 
           # tmp 分支
-          git checkout tmp || git checkout -b tmp
-          git rebase upstream/main
+          #git checkout tmp || git checkout -b tmp
+          #git rebase upstream/main
 
           # push
           git push origin main --force-with-lease
